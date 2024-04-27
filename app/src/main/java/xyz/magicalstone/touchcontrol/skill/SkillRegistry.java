@@ -4,6 +4,10 @@ import xyz.magicalstone.touchcontrol.skill.service.ServiceSkillAdapter;
 
 import java.util.*;
 
+/**
+ * The registry for all Skills. Each application should register Skills it provides.
+ * Skill from other applications will be synced after calling refreshServiceSkills. To register skills from other application is not allowed.
+ */
 public final class SkillRegistry {
 
     private static final Map<String, Skill> idToSkill = new HashMap<>();

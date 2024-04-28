@@ -1,6 +1,7 @@
 package xyz.magicalstone.touchcontrol.skill;
 
 import xyz.magicalstone.touchcontrol.skill.service.ServiceSkillAdapter;
+import xyz.magicalstone.touchcontrol.skill.service.SkillProvider;
 
 import java.util.*;
 
@@ -8,19 +9,19 @@ import java.util.*;
  * The registry for all Skills. Each application should register Skills it provides.
  * Skill from other applications will be synced after calling refreshServiceSkills. To register skills from other application is not allowed.
  */
-public final class SkillRegistry {
+public class SkillRegistry {
 
-    private static final Map<String, Skill> idToSkill = new HashMap<>();
+    public static final SkillRegistry localRegistry = new SkillRegistry();
 
-    private static final Set<Skill> exportedSkills = new HashSet<>();
+    private final Map<String, Skill> idToSkill;
 
-    private static final Map<String, Set<Skill>> descToSkill = new HashMap<>();
+    private final Map<String, Set<Skill>> descToSkill;
 
-    public static Skill getSkillById(String name) {
+    public Skill getSkillById(String name) {
         return idToSkill.get(name);
     }
 
-    public static Skill findMostLikelySkillByDesc(String desc, Map<String, String> args) {
+    public Skill findMostLikelySkillByDesc(String desc, Map<String, String> args) {
         Set<Skill> skillsWithDesc = descToSkill.get(desc);
         if (skillsWithDesc == null || skillsWithDesc.isEmpty()) {
             return null;
@@ -34,29 +35,25 @@ public final class SkillRegistry {
         return null;
     }
 
-    public static void registerSkill(Skill skill, boolean exported) {
-        if (skill instanceof ServiceSkillAdapter) {
-            throw new IllegalArgumentException("A ServiceSkillAdapter shouldn't be registered.");
-        }
+    public void registerSkill(Skill skill) {
         {
             idToSkill.put(skill.id, skill);
-            if (exported) {
-                exportedSkills.add(skill);
-            }
             Set<Skill> skillsInSameDesc = descToSkill.computeIfAbsent(skill.desc, k -> new HashSet<>());
             skillsInSameDesc.add(skill);
         }
     }
 
-    public static Set<Skill> getExportedSkills() {
-        return Collections.unmodifiableSet(exportedSkills);
+    public Map<String, Skill> getAllSkillsIdToSkill() {
+        return Collections.unmodifiableMap(idToSkill);
     }
 
-    public static void refreshServiceSkills() {
-
+    public SkillRegistry() {
+        idToSkill = new HashMap<>();
+        descToSkill = new HashMap<>();
     }
 
-    private SkillRegistry() {
-
+    protected SkillRegistry(Map<String, Skill> idToSkill, Map<String, Set<Skill>> descToSkill) {
+        this.idToSkill = idToSkill;
+        this.descToSkill = descToSkill;
     }
 }

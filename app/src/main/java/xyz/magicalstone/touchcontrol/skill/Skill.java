@@ -1,6 +1,7 @@
 package xyz.magicalstone.touchcontrol.skill;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -38,7 +39,7 @@ public abstract class Skill {
     public Skill(String id, String desc, Map<String, String> argsDesc) {
         this.id = id;
         this.desc = desc;
-        this.argsDesc = Collections.unmodifiableMap(argsDesc);
+        this.argsDesc = Collections.unmodifiableMap(new HashMap<>(argsDesc));
     }
 
     /**
@@ -46,7 +47,7 @@ public abstract class Skill {
      * @param args Args for the skill. Should follow the description of argsDesc.
      *             Its keys should be the same as the argsDesc and their value should follow its desc.
      * @param activatorType Determine to preprocess args or not. If it isn't activated by AI, preprocessing is not needed.
-     * @return
+     * @return One of the common keys of a return value is "succeed" for if the activity activated succeed or not.
      */
     public Map<String, String> active(Map<String, String> args, ActivatorType activatorType) {
         //TODO If the activator isn't NON_AI, check and fix args if necessary.

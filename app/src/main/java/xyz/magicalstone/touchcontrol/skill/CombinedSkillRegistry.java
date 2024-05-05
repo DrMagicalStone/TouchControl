@@ -13,9 +13,9 @@ public class CombinedSkillRegistry extends SkillRegistry {
     }
 
     @Override
-    public Skill getSkillById(String name) {
+    public Skill getSkillById(String id) {
         for (SkillRegistry registry : combinedRegistries) {
-            Skill skillFound = registry.getSkillById(name);
+            Skill skillFound = registry.getSkillById(id);
             if (skillFound != null) {
                 return skillFound;
             }

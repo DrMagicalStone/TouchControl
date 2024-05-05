@@ -21,7 +21,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name=".control.ReplayService"
+        <service android:name=".control.AccessibilityOperator"
                  android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
                  android:label="@string/accessibility"
                  android:enabled="true"
@@ -33,14 +33,14 @@
             </intent-filter>
             <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility" />
         </service>
-        <service android:name=".skill.service.SkillProviderService"
+        <service android:name=".skill.service.ServiceSkillProviderImpl"
                  android:label="@string/skill_provider"
                  android:enabled="true"
                  android:description="@string/app_name"
                  android:exported="true"
                  android:stopWithTask="false">
             <intent-filter>
-                <action android:name="xyz.magicalstone.oldfriend.SkillProvider" />
+                <action android:name="xyz.magicalstone.seniorpal.SkillProvider" />
             </intent-filter>
         </service>
     </application>

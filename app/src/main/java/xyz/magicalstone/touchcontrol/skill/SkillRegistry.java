@@ -1,8 +1,5 @@
 package xyz.magicalstone.touchcontrol.skill;
 
-import xyz.magicalstone.touchcontrol.skill.service.ServiceSkillAdapter;
-import xyz.magicalstone.touchcontrol.skill.service.SkillProvider;
-
 import java.util.*;
 
 /**
@@ -17,8 +14,8 @@ public class SkillRegistry {
 
     private final Map<String, Set<Skill>> descToSkill;
 
-    public Skill getSkillById(String name) {
-        return idToSkill.get(name);
+    public Skill getSkillById(String id) {
+        return idToSkill.get(id);
     }
 
     public Skill findMostLikelySkillByDesc(String desc, Map<String, String> args) {

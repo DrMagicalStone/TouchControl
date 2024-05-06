@@ -3,18 +3,23 @@ package xyz.magicalstone.touchcontrol
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
+import android.view.Menu
+import android.view.MenuItem
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
-import android.view.Menu
-import android.view.MenuItem
 import xyz.magicalstone.touchcontrol.databinding.ActivityMainBinding
+import xyz.magicalstone.touchcontrol.skill.Skill
+import xyz.magicalstone.touchcontrol.skill.SkillRegistry
+import xyz.magicalstone.touchcontrol.skill.service.ServiceSkillCollector
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+
+    private lateinit var collector: ServiceSkillCollector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,9 +34,29 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            run {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+
+                //Demo code
+                val contactWith: MutableMap<String, String> = HashMap()
+                contactWith["contactTo"] = "x"
+                Thread {
+                    try {
+                        Thread.sleep(2000)
+                        val wechatCall = collector.importedSkills.getSkillById("xyz.magicalstone.touchcontrol.WeChatCall")
+                        println("Wechat call$wechatCall")
+                        wechatCall?.active(contactWith, Skill.ActivatorType.NON_AI)
+                    } catch (e: InterruptedException) {
+                        throw RuntimeException(e)
+                    }
+                }.start()
+            }
         }
+
+        //Demo code
+        collector = ServiceSkillCollector(this)
+        collector.refreshImportedSkills()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

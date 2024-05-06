@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import xyz.magicalstone.touchcontrol.skill.Skill;
 import xyz.magicalstone.touchcontrol.skill.SkillRegistry;
+import xyz.magicalstone.touchcontrol.skill.Util;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -17,11 +18,11 @@ import java.util.Map;
 
 public class ServiceSkillAdapter extends Skill {
 
-    private final SkillProvider baseService;
+    private final Context baseService;
 
     private final ComponentName providerServiceName;
 
-    ServiceSkillAdapter(String id, String desc, Map<String, String> args, SkillProvider baseService, ComponentName providerServiceName) {
+    ServiceSkillAdapter(String id, String desc, Map<String, String> args, Context baseService, ComponentName providerServiceName) {
         super(id, desc, args);
         this.providerServiceName = providerServiceName;
         this.baseService = baseService;
@@ -38,22 +39,26 @@ public class ServiceSkillAdapter extends Skill {
                 Bundle data = msg.getData();
                 if(!data.getBoolean("activated")) {
                     exception[0] = new IllegalArgumentException("The Skill this adapter " + id + " linked to doesn't exist.");
-                    returnValue.notify();
+                    synchronized (returnValue) {
+                        returnValue.notify();
+                    }
                     return;
                 }
                 try {
-                    returnValue.putAll(jsonToStringMap(new JSONObject(data.getString("result"))));
+                    returnValue.putAll(Util.jsonToStringMap(data.getString("result")));
                 } catch (JSONException e) {
                     exception[0] = e;
                 } finally {
-                    returnValue.notify();
+                    synchronized (returnValue) {
+                        returnValue.notify();
+                    }
                 }
             }
         });
 
         Intent intent = new Intent();
         intent.setComponent(providerServiceName);
-        Message messageToSend = Message.obtain(null, ServiceMessageType.GET_SKILL_LIST.ordinal());
+        Message messageToSend = Message.obtain(null, ServiceMessageType.ACTIVE_SKILL.ordinal());
         Bundle bundle = new Bundle();
         bundle.putSerializable("skill", new SkillDataWrapper(id, "", optimizedArgs));
         messageToSend.setData(bundle);
@@ -61,7 +66,9 @@ public class ServiceSkillAdapter extends Skill {
         baseService.bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
         try {
-            returnValue.wait();
+            synchronized (returnValue) {
+                returnValue.wait();
+            }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -74,56 +81,5 @@ public class ServiceSkillAdapter extends Skill {
         }
         return returnValue;
     }
-
-    static Map<String, String> jsonToStringMap(JSONObject json) {
-        Map<String, String> res = new HashMap<>();
-        for (Iterator<String> it = json.keys(); it.hasNext(); ) {
-            String key = it.next();
-            res.put(key, json.optString(key));
-        }
-        return res;
-    }
 }
 
-class ServiceSkillHandler {
-
-    private final SkillProvider baseService;
-
-    private final SkillRegistry baseRegistry;
-
-    ServiceSkillHandler(SkillProvider baseService) {
-        this.baseService = baseService;
-        this.baseRegistry = baseService.importedSkills0;
-    }
-
-    public void handleMessage(@NonNull Message msg) {
-        if (ServiceMessageType.values()[msg.what] != ServiceMessageType.ACTIVE_SKILL) {
-            return;
-        }
-        Message reply = Message.obtain(null, ServiceMessageType.GET_SKILL_LIST.ordinal());
-        Bundle bundle = new Bundle();
-        try {
-            SkillDataWrapper data = (SkillDataWrapper) msg.getData().getSerializable("skill");
-            Skill skill = baseRegistry.getSkillById(data.id);
-            if (skill == null) {
-
-                bundle.putBoolean("activated", false);
-                bundle.putString("reason", "Invalid skill id: " + data.id);
-                reply.setData(bundle);
-                msg.replyTo.send(reply);
-                return;
-            }
-            baseService.serviceExecutor.submit(() -> {
-                Map<String, String> result = skill.active(data.args, Skill.ActivatorType.NON_AI);
-                bundle.putBoolean("activated", true);
-                bundle.putString("result", new JSONObject(result).toString());
-                reply.setData(bundle);
-                try {
-                    msg.replyTo.send(reply);
-                } catch (RemoteException ignored) {
-                }
-            });
-        } catch (RemoteException ignored) {
-        }
-    }
-}

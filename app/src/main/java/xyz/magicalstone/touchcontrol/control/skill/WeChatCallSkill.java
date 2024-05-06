@@ -16,7 +16,7 @@ public final class WeChatCallSkill extends AccessibilitySkill {
 
     static {
         argsDesc = new HashMap<>();
-        argsDesc.put("contactTo", "The contact to have a call with in Chinese Pinyin .");
+        argsDesc.put("contactTo", "The contact to have a call with in Chinese Pinyin.");
     }
 
     public WeChatCallSkill(AccessibilityOperator operator) {

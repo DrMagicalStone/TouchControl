@@ -1,4 +1,4 @@
-package xyz.magicalstone.weathercontrol.control.skill;
+package xyz.magicalstone.touchcontrol.control.skill;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -9,7 +9,7 @@ import java.util.List;
 public final class CheckWeatherSkill extends AccessibilitySkill {
 
     public CheckWeatherSkill(AccessibilityOperator operator) {
-        super("xyz.magicalstone.weathercontrol.CheckWeather", "Check today's weather.", null, operator);
+        super("xyz.magicalstone.touchcontrol.CheckWeather", "Check today's weather.", null, operator);
     }
 
     @Override
